@@ -1,5 +1,5 @@
 import { randomInt } from "@/lib/random";
-import type { Tower, TowerGridCell, RoomPaletteItem } from "@/types/tower";
+import type { Tower, TowerGridCell, TowerRoom, RoomPaletteItem, RoomType } from "@/types/tower";
 
 const roomPalette: RoomPaletteItem[] = [
   { type: "guard", label: "Guard Post", cost: 40, description: "Weak defenders and slow traps." },
@@ -64,12 +64,12 @@ export function getRoomPalette() {
   return roomPalette;
 }
 
-export function buildRoom(type: string) {
+export function buildRoom(type: RoomType) {
   return {
     id: `room_${type}_${randomInt(1000, 9999)}`,
     type,
     level: 1,
     dpCost: roomPalette.find((room) => room.type === type)?.cost ?? 40,
     label: roomPalette.find((room) => room.type === type)?.label ?? "Chamber",
-  };
+  } satisfies TowerRoom;
 }

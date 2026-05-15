@@ -29,5 +29,6 @@ export type GameState = {
   appendCombatLog: (entry: string) => void;
   resetCombatLog: () => void;
   progressRoom: () => void;
+  updateTower: (tower: Tower) => void;
   evolveHero: (heroId: string, pathId: string) => void;
 };

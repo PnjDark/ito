@@ -65,6 +65,6 @@ export function runCombatRound(combatants: Combatant[]) {
   return {
     log,
     combatants: participants,
-    winner: partyAlive && !enemyAlive ? "party" : !partyAlive && enemyAlive ? "defenders" : "party",
-  } as CombatResult;
+    winner: !partyAlive ? "defenders" : !enemyAlive ? "party" : null,
+  } as unknown as CombatResult;
 }

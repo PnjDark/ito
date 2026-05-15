@@ -20,7 +20,7 @@ export type SpecializationKey =
   | "storm"
   | "aegis";
 
-export type MoodState = "steady" | "inspired" | "tense" | "broken";
+export type MoodState = "steadfast" | "inspired" | "tense" | "broken";
 
 export type HeroTrait = {
   id: string;

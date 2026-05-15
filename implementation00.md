@@ -12,430 +12,200 @@ Build a **playable, atmospheric web prototype** with a **stylized dark fantasy t
 
 ---
 
-## Tech Stack (Per User)
+## Tech Stack
 
 | Layer | Tech | Phase 0 Role |
 |-------|------|--------------|
-| **Frontend** | Next.js + Tailwind CSS | Full prototype UI |
+| **Frontend** | Next.js 16 + Tailwind CSS v4 | Full prototype UI |
 | **Backend** | NestJS | Scaffolded, minimal API for Phase 0 |
-| **Database** | PostgreSQL + Redis | Schema defined, seeded — game state in localStorage for now |
-| **AI** | Local lightweight models | Stub/template system for Phase 0, real integration Phase 1 |
+| **Database** | PostgreSQL + Redis | Schema defined — game state in localStorage for now |
+| **AI** | Template engine | Mad-libs style procedural text, real LLM in Phase 1 |
 | **Real-time** | Socket.IO | Scaffolded gateway, not active in Phase 0 |
-
-> [!NOTE]
-> Phase 0 runs primarily client-side. The NestJS backend is scaffolded with the service structure but game logic executes in the browser. This lets us iterate on gameplay feel without backend round-trips. Phase 1 migrates game state server-side.
 
 ---
 
 ## Visual Identity: Dark Fantasy Terminal Aesthetic
 
-### The Look
-- **CRT / terminal feel** — scanline overlays, subtle screen flicker, monospace text for system messages
-- **Runic UI chrome** — borders made of glyph patterns, glowing sigil accents
-- **Text-heavy immersion** — backstories, dialogue, and combat logs presented as narrative text with typewriter reveals
-- **Illustrated portraits** — stylized character art (static, not animated), framed in ornate terminal windows
-- **Minimal animation** — glow pulses, text fades, subtle particle embers. No complex sprite animation
-- **Dark palette** — near-black backgrounds, amber/gold text, muted jewel tones for rarity
-
-### Color System (Tailwind Custom)
+### Color System
 ```
---bg-void:        #08080c      (deepest black)
---bg-terminal:    #0e0e14      (terminal background)
---bg-panel:       #14141e      (panel/card background)
---bg-elevated:    #1a1a28      (elevated surfaces)
---border-dim:     #2a2a3a      (subtle borders)
---border-glow:    #3a3a5a      (active borders)
+--bg-void:        #08080c
+--bg-terminal:    #0e0e14
+--bg-panel:       #14141e
+--bg-elevated:    #1a1a28
+--border-dim:     #2a2a3a
+--border-glow:    #3a3a5a
 
---text-primary:   #d4c5a0      (warm parchment)
---text-secondary: #8a8070      (muted)
---text-system:    #5a7a5a      (terminal green for system msgs)
---text-dim:       #4a4a5a      (very muted)
+--text-primary:   #d4c5a0
+--text-secondary: #8a8070
+--text-system:    #5a7a5a
+--text-dim:       #4a4a5a
 
---rarity-common:    #7a7a8a    (grey steel)
---rarity-rare:      #4a8ab5    (cold blue)
---rarity-elite:     #9b5de5    (arcane purple)
---rarity-mythic:    #d4a855    (ancient gold)
---rarity-ascendant: #ff6b6b    (blood ember)
+--rarity-common:    #7a7a8a
+--rarity-rare:      #4a8ab5
+--rarity-elite:     #9b5de5
+--rarity-mythic:    #d4a855
+--rarity-ascendant: #ff6b6b
 
---accent-fire:    #e85d3a      (ember)
---accent-ice:     #5bc0de      (frost)
---accent-nature:  #5a8a5a      (verdant)
---accent-shadow:  #6a4c93      (shadow)
---accent-holy:    #f0d060      (divine)
+--accent-fire:    #e85d3a
+--accent-ice:     #5bc0de
+--accent-nature:  #5a8a5a
+--accent-shadow:  #6a4c93
+--accent-holy:    #f0d060
 ```
 
 ### Typography
-- **Headings**: `"Cinzel Decorative"` — ornate fantasy serif
-- **Body/Lore**: `"Crimson Text"` or `"EB Garamond"` — readable serif for narrative
-- **System/Stats**: `"JetBrains Mono"` or `"Fira Code"` — monospace for stats, logs, terminal text
+- **Headings**: `"Cinzel"` — ornate fantasy serif
+- **Body/Lore**: `"Crimson Text"` — readable serif for narrative
+- **System/Stats**: `"JetBrains Mono"` — monospace for stats, logs, terminal text
 - **UI Labels**: `"Inter"` — clean sans-serif for buttons, navigation
 
-### UI Patterns
-- **Panels**: Dark glass with 1px glowing borders, subtle inner shadow
-- **Cards**: Beveled edges with rune-pattern borders, rarity-colored glow
-- **Buttons**: Terminal-style `[ SUMMON ]` with hover glow, no rounded corners
-- **Text reveals**: Typewriter effect for backstories and combat narration
-- **Scanlines**: CSS overlay with repeating gradient (subtle, toggleable)
-- **Transitions**: Fade + slight vertical shift, no flashy page transitions
+---
+
+## Progress Status
+
+### ✅ Phase 0A: Foundation — COMPLETE
+
+| Item | Status |
+|------|--------|
+| Next.js + Tailwind v4 + Zustand bootstrap | ✅ Done |
+| IDX dev environment (dev.nix, preview, PORT) | ✅ Done |
+| `globals.css` — full color tokens, scanlines, terminal-btn, panel utilities | ✅ Done |
+| UI primitives: `Panel`, `Button`, `StatBar`, `TypeWriter`, `Scanlines`, `NavBar` | ✅ Done |
+| Type definitions: `Hero`, `Tower`, `Combat`, `GameState` | ✅ Done |
+| Data: 8 archetypes, 8 specializations, 5 skills, 8 traits, names, backstories | ✅ Done |
+| Systems: `gacha`, `hero`, `personality`, `lore`, `tower`, `combat`, `evolution` | ✅ Done |
+| Zustand store with localStorage persistence | ✅ Done |
+| NestJS backend scaffold + Prisma schema + Docker Compose | ✅ Done |
+
+### ✅ Phase 0B: Core Scenes — COMPLETE
+
+| Scene | Status | Notes |
+|-------|--------|-------|
+| `/` Title scene | ✅ Done | Atmospheric entry, nav links |
+| `/summon` Summon scene | ✅ Done | ×1/×10 summon, multi-result grid, trait badges, stat bars, typewriter backstory |
+| `/roster` Roster scene | ✅ Done | Hero list, full detail panel, stats, mood gauges, trait badges, skills |
+| `/tower` Tower builder | ✅ Done | Click-to-place/remove rooms, DP budget, persists to store |
+| `/raid` Raid scene | ✅ Done | Full multi-round combat, HP bars, turn order, action panel, skill use, flee |
+| `/evolve` Evolution scene | ✅ Done | Hero select, 3 branching paths, stat preview, evolve action |
+
+### ✅ Combat Components — COMPLETE
+
+| Component | Status |
+|-----------|--------|
+| `CombatLog` | ✅ Done |
+| `CombatantRow` — HP bar, color-coded health, fallen state | ✅ Done |
+| `TurnOrder` — speed-sorted initiative bar | ✅ Done |
+| `ActionPanel` — Attack / Defend / Skill / Flee | ✅ Done |
+| `MoodGauge` — morale/loyalty/fear bars | ✅ Done |
+| `TraitBadge` — pill with tooltip | ✅ Done |
 
 ---
 
-## User Review Required
+## Next Steps — Phase 0C: Polish & Depth
 
-> [!IMPORTANT]
-> **Backend language**: You listed NestJS *or* Go. For Phase 0, I'll scaffold with **NestJS** (TypeScript across the full stack is faster for a solo/small team). The architecture supports swapping to Go later for performance-critical services. Agree?
+### Step 11 — Data Expansion *(~2 hrs)*
 
-> [!IMPORTANT]
-> **Tailwind version**: I'll use **Tailwind CSS v4** (latest). Confirm?
+The current data is minimal (5 skills, 8 traits, 8 backstory templates). Expand to make heroes feel genuinely unique:
 
-> [!WARNING]
-> **No LLM calls in Phase 0**: Hero backstories and dialogue use a **template engine** with procedural variable substitution (mad-libs style). This produces surprisingly good variety with zero API cost. Real model integration comes in Phase 1. Acceptable?
+- **`skills.ts`** — expand from 5 → 20+ skills, distributed across archetypes (each archetype gets 3–4 unique skills)
+- **`traits.ts`** — expand from 8 → 20+ traits with varied mood bonus combinations
+- **`backstories.ts`** — expand from 8 → 30+ templates, add `{archetype}`, `{faction}`, `{epithet}` variable slots in `lore.ts`
+- **`names.ts`** — expand name parts (prefixes ×15, middles ×12, suffixes ×12, epithets ×20) for more name variety
+- **`archetypes.ts`** — add missing specializations so each archetype has 3 (currently most have 2)
+- **`gacha.ts`** — wire `chooseSkills` to archetype key so heroes get archetype-appropriate skills
 
----
+### Step 12 — Combat Depth *(~2 hrs)*
 
-## Open Questions
+Current combat is functional but shallow — every round is identical. Add:
 
-1. **NestJS or Go?** — Recommendation: NestJS for Phase 0-2, consider Go for hot-path services (combat, matchmaking) in Phase 3+.
-2. **Deployment target** — Running locally only, or deploy to Vercel/Railway for demo sharing?
-3. **Mobile-first or desktop-first?** — The terminal aesthetic works great on both. Which is priority for layout breakpoints?
+- **Status effects** — Burn (damage over time), Shield (damage reduction), Stun (skip turn), stored on `Combatant.status`
+- **Skill effects** — map skill IDs to status application logic in `combat.ts`
+- **XP + gold rewards** — on victory, grant XP to party heroes (`hero.xp += reward`) and gold to resources
+- **Level-up check** — after XP gain, check threshold and increment `hero.level`, recalculate stats
+- **Mood changes** — victory raises morale, defeat raises fear; update `hero.mood` post-combat
+- **Room progression** — after clearing defenders, show "Advance to next room?" prompt; generate a new defender set for room 2+
+- **`LootReveal` component** — post-combat panel showing XP gained, gold, mood changes
 
----
+### Step 13 — Tower Depth *(~1 hr)*
 
-## Project Structure
+- **Defender assignment** — click a placed guard/boss room → pick a hero from roster to assign as defender; show assigned hero name on the tile
+- **Tower save** — `[ Save Tower ]` button persists the current layout to the store's `tower` (already wired, just needs UI confirmation)
+- **Enemy tower generation** — generate 3 enemy towers procedurally with rooms and named defenders drawn from `createDefender()`, replacing the hardcoded string arrays
+- **Tower theme display** — show theme name and a short flavor line on the tower builder header
 
-```
-ito/
-├── Documentation/                    (existing)
-├── frontend/                         (Next.js app)
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx            (root layout, fonts, global providers)
-│   │   │   ├── page.tsx              (title/landing scene)
-│   │   │   ├── globals.css           (Tailwind + custom design tokens)
-│   │   │   ├── summon/
-│   │   │   │   └── page.tsx          (gacha summoning scene)
-│   │   │   ├── roster/
-│   │   │   │   └── page.tsx          (hero collection)
-│   │   │   ├── tower/
-│   │   │   │   └── page.tsx          (tower builder)
-│   │   │   ├── raid/
-│   │   │   │   └── page.tsx          (raid combat)
-│   │   │   └── evolve/
-│   │   │       └── page.tsx          (class evolution)
-│   │   ├── components/
-│   │   │   ├── ui/                   (generic UI primitives)
-│   │   │   │   ├── Panel.tsx         (dark glass panel)
-│   │   │   │   ├── Button.tsx        (terminal-style button)
-│   │   │   │   ├── StatBar.tsx       (animated stat bar)
-│   │   │   │   ├── TypeWriter.tsx    (text reveal effect)
-│   │   │   │   ├── Modal.tsx         (overlay modal)
-│   │   │   │   ├── Toast.tsx         (notification)
-│   │   │   │   ├── Tooltip.tsx       (hover info)
-│   │   │   │   ├── Scanlines.tsx     (CRT overlay)
-│   │   │   │   └── RuneBorder.tsx    (decorative borders)
-│   │   │   ├── hero/
-│   │   │   │   ├── HeroCard.tsx      (roster card)
-│   │   │   │   ├── HeroDetail.tsx    (full hero sheet)
-│   │   │   │   ├── HeroPortrait.tsx  (framed portrait)
-│   │   │   │   ├── TraitBadge.tsx    (personality trait pill)
-│   │   │   │   └── MoodGauge.tsx     (morale/loyalty/fear bars)
-│   │   │   ├── combat/
-│   │   │   │   ├── CombatLog.tsx     (scrolling combat narrative)
-│   │   │   │   ├── TurnOrder.tsx     (initiative tracker)
-│   │   │   │   ├── ActionPanel.tsx   (attack/defend/skill selection)
-│   │   │   │   ├── CombatantRow.tsx  (hero HP/status in combat)
-│   │   │   │   └── LootReveal.tsx    (post-combat rewards)
-│   │   │   ├── tower/
-│   │   │   │   ├── TowerGrid.tsx     (grid editor)
-│   │   │   │   ├── RoomTile.tsx      (individual room)
-│   │   │   │   ├── RoomPalette.tsx   (room type selector)
-│   │   │   │   └── DPBudget.tsx      (defense point display)
-│   │   │   ├── summon/
-│   │   │   │   ├── SummonCircle.tsx  (summoning animation)
-│   │   │   │   ├── SummonReveal.tsx  (hero reveal sequence)
-│   │   │   │   └── PityCounter.tsx   (pity progress)
-│   │   │   └── evolution/
-│   │   │       ├── EvolutionTree.tsx  (branching path viz)
-│   │   │       └── ClassPreview.tsx   (evolution preview card)
-│   │   ├── systems/
-│   │   │   ├── gacha.ts              (rarity rolls, pity, hero gen)
-│   │   │   ├── combat.ts            (turn-based combat engine)
-│   │   │   ├── tower.ts             (tower grid, room placement)
-│   │   │   ├── hero.ts              (stats, leveling, evolution)
-│   │   │   ├── personality.ts       (traits, mood, dialogue)
-│   │   │   └── lore.ts              (names, backstories, factions)
-│   │   ├── data/
-│   │   │   ├── archetypes.ts        (8 base classes)
-│   │   │   ├── specializations.ts   (24+ specs)
-│   │   │   ├── evolutions.ts        (evolution trees)
-│   │   │   ├── skills.ts            (50+ skills)
-│   │   │   ├── traits.ts            (20+ personality traits)
-│   │   │   ├── names.ts             (procedural name parts)
-│   │   │   ├── backstories.ts       (template backstories)
-│   │   │   ├── factions.ts          (6 factions)
-│   │   │   └── tower-themes.ts      (5 themes)
-│   │   ├── stores/
-│   │   │   └── gameStore.ts         (Zustand store — heroes, tower, resources)
-│   │   ├── hooks/
-│   │   │   ├── useTypewriter.ts     (typewriter text hook)
-│   │   │   ├── useGameState.ts      (game state access)
-│   │   │   └── useCombat.ts         (combat state machine)
-│   │   ├── lib/
-│   │   │   ├── random.ts            (seeded RNG, weighted random)
-│   │   │   ├── formatters.ts        (number/time formatting)
-│   │   │   └── audio.ts             (optional ambient audio)
-│   │   └── types/
-│   │       ├── hero.ts              (Hero, Stat, Skill types)
-│   │       ├── tower.ts             (Tower, Room, Grid types)
-│   │       ├── combat.ts            (Combat state types)
-│   │       └── game.ts              (Game state types)
-│   ├── public/
-│   │   └── assets/
-│   │       ├── portraits/           (generated hero portraits)
-│   │       ├── icons/               (rune/glyph icons)
-│   │       └── backgrounds/         (scene backgrounds)
-│   ├── tailwind.config.ts
-│   ├── next.config.ts
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── backend/                          (NestJS — scaffolded for Phase 1)
-│   ├── src/
-│   │   ├── main.ts
-│   │   ├── app.module.ts
-│   │   ├── auth/                    (stub)
-│   │   ├── player/                  (stub)
-│   │   ├── hero/                    (stub)
-│   │   ├── tower/                   (stub)
-│   │   ├── combat/                  (stub)
-│   │   ├── gacha/                   (stub)
-│   │   └── common/
-│   │       ├── dto/
-│   │       └── entities/
-│   ├── prisma/
-│   │   └── schema.prisma            (full DB schema)
-│   ├── nest-cli.json
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── docker-compose.yml               (PostgreSQL + Redis for local dev)
-└── README.md
-```
+### Step 14 — Evolution Depth *(~1 hr)*
+
+- **Requirements gate** — show evolution paths as locked if `hero.level < 3`; display requirement text
+- **Stat diff preview** — show `+4 ATK / +2 SPD` diff inline on each path card before confirming
+- **Post-evolution feedback** — after evolving, show a brief typewriter message: `> {name} has become {newTitle}.`
+- **Evolution history** — store applied path ID on hero so the same path can't be applied twice; show "Evolved" badge on roster card
+
+### Step 15 — Visual Polish *(~1.5 hrs)*
+
+- **Rarity glow borders** — hero cards and summon reveal should have a colored `box-shadow` matching rarity color (currently only background tint)
+- **Summon animation** — add a CSS keyframe flash/pulse on summon button click before the result appears (dim screen → glow → reveal)
+- **Page transitions** — add `opacity-0 → opacity-100` fade on route change using a layout wrapper
+- **Mobile nav** — current navbar hides links on mobile; add a hamburger menu or bottom tab bar for `sm` breakpoints
+- **Empty state illustrations** — replace plain text empty states with terminal-style ASCII art blocks (e.g. `[ NO HEROES FOUND ]` with rune border)
+- **Scanline toggle** — add a `[ CRT: ON ]` toggle in the navbar that persists to localStorage
+
+### Step 16 — README + Demo Prep *(~30 min)*
+
+- `README.md` — setup instructions (`npm install`, `npm run dev`), feature overview, screenshot
+- Verify full gameplay loop: Title → Summon ×10 → Roster → Tower build → Raid → Evolve
+- Mobile viewport check at 375px
 
 ---
 
-## Proposed Changes — Build Order
+## Remaining Gaps (Known)
 
-### Phase 0A: Foundation (Steps 1-3)
-
-#### Step 1 — Project Bootstrap
-
-##### [NEW] Next.js frontend app
-- `npx create-next-app@latest` with TypeScript, Tailwind, App Router, ESLint
-- Install: `zustand` (state), Google Fonts via `next/font`
-- Configure Tailwind with custom dark fantasy design tokens
-- Set up `globals.css` with CRT scanline overlay, glow utilities, rune borders
-
-##### [NEW] NestJS backend scaffold
-- `npx @nestjs/cli new backend`
-- Install: `@nestjs/websockets`, `socket.io`, `prisma`, `@prisma/client`
-- Create module stubs for each service (auth, hero, tower, combat, gacha)
-- Define Prisma schema (heroes, players, towers, rooms, combat_logs)
-
-##### [NEW] Docker Compose
-- PostgreSQL 16 + Redis 7 containers
-- Prisma migration runner
-
----
-
-#### Step 2 — Design System & UI Components
-
-##### [NEW] globals.css + Tailwind config
-- Full color system (void, terminal, panel, rarity colors)
-- Typography scale with fantasy + mono fonts
-- Scanline overlay keyframe
-- Glow/pulse utility classes
-- Responsive breakpoints (mobile-first)
-
-##### [NEW] UI primitives
-- `Panel.tsx` — dark glass container with rune borders
-- `Button.tsx` — terminal bracket style `[ ACTION ]` with hover glow
-- `StatBar.tsx` — animated fill bar with label
-- `TypeWriter.tsx` — character-by-character text reveal
-- `Scanlines.tsx` — toggleable CRT overlay
-- `RuneBorder.tsx` — decorative glyph border component
-- `Modal.tsx`, `Toast.tsx`, `Tooltip.tsx`
-
----
-
-#### Step 3 — Data & Core Systems
-
-##### [NEW] Type definitions
-- `Hero`, `HeroStats`, `Skill`, `PersonalityTrait`, `Mood`, `Evolution`
-- `Tower`, `TowerGrid`, `Room`, `RoomType`
-- `CombatState`, `CombatAction`, `CombatResult`
-- `GameState`, `PlayerResources`
-
-##### [NEW] Data files
-- 8 archetypes with full stat tables and growth curves
-- 24+ specializations (3 per archetype)
-- 50+ skills across archetypes
-- 20+ personality traits with modifier effects
-- 200+ name components (prefixes, roots, suffixes, epithets)
-- 30+ backstory templates with variable slots
-- 6 factions with lore and relationship data
-- 5 tower themes
-
-##### [NEW] Game systems
-- `gacha.ts` — rarity rolls, pity, complete hero assembly pipeline
-- `hero.ts` — stat calculation, leveling, evolution checks
-- `personality.ts` — trait generation, mood updates, dialogue templates
-- `lore.ts` — procedural name gen, backstory assembly, title generation
-- `tower.ts` — grid management, room placement, DP validation
-- `combat.ts` — initiative, damage, status effects, AI behavior, turn resolution
-
-##### [NEW] Zustand game store
-- Heroes roster, tower layout, resources (Fate Threads, gold)
-- Pity counter, combat state, current scene
-- localStorage persistence
-
----
-
-### Phase 0B: Core Scenes (Steps 4-8)
-
-#### Step 4 — Title Scene
-- `/` route — atmospheric entry
-- Game title in `Cinzel Decorative` with subtle glow animation
-- Floating rune particles (CSS-only, minimal)
-- Terminal-style subtitle text: `> Awakening thread connection...`
-- Navigation: `[ ENTER THE TOWERS ]` → routes to main hub
-- Scanline overlay active
-
-#### Step 5 — Summon Scene (⭐ Key Scene)
-- `/summon` route — the gacha experience
-- **Summoning interface**:
-  - Resource display (Fate Threads remaining)
-  - `[ SUMMON ×1 ]` and `[ SUMMON ×10 ]` buttons
-  - Pity counter: `THREAD RESONANCE: 45/90`
-- **Summon animation**:
-  - Screen dims, terminal text: `> Casting thread into the void...`
-  - Rarity-colored glow intensifies (border + background pulse)
-  - Text reveal of hero name, then traits, then backstory
-  - Portrait fade-in with rarity frame
-- **Hero reveal card**:
-  - Portrait (illustrated, framed)
-  - Name + epithet
-  - Rarity badge
-  - Archetype + specialization
-  - Trait pills
-  - Backstory in typewriter text
-  - Stats preview
-  - `[ ADD TO ROSTER ]` / `[ SUMMON AGAIN ]`
-
-#### Step 6 — Roster Scene
-- `/roster` route — hero collection browser
-- **Grid layout**: Hero cards sorted by rarity, filterable
-- **Hero card**: Portrait thumbnail, name, level, rarity glow border
-- **Detail panel** (click to expand):
-  - Full portrait
-  - All stats with animated bars
-  - Personality traits with descriptions
-  - Full backstory (scrollable, serif font)
-  - Mood gauges (morale / loyalty / fear)
-  - Skills list
-  - Evolution path preview
-  - `[ ASSIGN TO TOWER ]` / `[ VIEW EVOLUTION ]`
-
-#### Step 7 — Tower Scene
-- `/tower` route — tower defense builder
-- **Grid view**: 15×15 tile grid, dark with grid lines
-- **Room palette**: Side panel with room types and DP costs
-- **Click-to-place**: Select room type → click grid cell
-- **DP budget**: `DP: 1650 / 2000` bar at top
-- **Defender assignment**: Click guard/boss room → assign hero from roster
-- **Pre-built enemy towers**: 3 generated towers for raiding
-
-#### Step 8 — Raid Scene (⭐ Key Scene)
-- `/raid` route — turn-based tower assault
-- **Party select**: Choose 4 heroes from roster
-- **Target select**: Choose enemy tower to raid
-- **Combat view**:
-  - Two-column layout: your party (left) vs defenders (right)
-  - HP bars, status icons, level indicators
-  - Turn order bar at top
-  - **Combat log** (center): narrative text of each action
-    - `> Lyra lunges from the shadows — BACKSTAB — 450 damage! (CRITICAL)`
-    - `> The Rune Berserker's rage builds... ATK increased.`
-  - **Action panel** (bottom): `[ ATTACK ]` `[ DEFEND ]` `[ SKILL ▼ ]` `[ FLEE ]`
-  - Skill submenu with costs and descriptions
-  - Target selection (click enemy)
-- **Room progression**: Clear defenders → advance to next room
-- **Victory/defeat**: Loot display, XP gains, mood changes
-
-#### Step 9 — Evolution Scene
-- `/evolve` route — class evolution
-- **Tree visualization**: Branching paths from current class
-- **Requirements**: Level, traits, combat history
-- **Preview**: New stats, skills, class description
-- **Evolution trigger**: `[ EVOLVE ]` with confirmation + animation
-
----
-
-### Phase 0C: Polish (Step 10)
-
-#### Step 10 — Final polish
-- Navigation bar between scenes (persistent, terminal-style)
-- Loading states and empty states
-- Mobile responsive pass
-- Generate hero portrait assets with image tool
-- Sound design (optional): ambient drone, click SFX
-- README with setup instructions
-- Record demo video via browser tool
+| Gap | Priority | Notes |
+|-----|----------|-------|
+| Hero portrait images | Low | Placeholder color blocks work for Phase 0; real art in Phase 1 |
+| Faction data | Low | Referenced in spec but not yet implemented |
+| Tower themes data file | Low | `tower-themes.ts` not yet created |
+| `useCombat` hook | Low | Combat logic lives in raid page directly; extract if it grows |
+| `useGameState` hook | Low | Direct store selectors used everywhere; fine for Phase 0 |
+| Backend API active | Deferred | Phase 1 — migrate game state server-side |
+| Socket.IO real-time | Deferred | Phase 1 |
 
 ---
 
 ## Verification Plan
-
-### Automated Tests
-```bash
-# Gacha distribution test — verify 10K rolls match expected rates
-npm test -- --grep "gacha distribution"
-
-# Combat engine — damage formula, initiative, status effects
-npm test -- --grep "combat"
-
-# Tower system — placement validation, DP budget
-npm test -- --grep "tower"
-```
-
-### Browser Testing
-- Full gameplay loop recording: Title → Summon → Roster → Tower → Raid → Evolve
-- Mobile viewport test (375px width)
-- Visual quality check: no placeholder-looking elements
 
 ### Quality Gates
 - ✅ Every summoned hero feels unique (name + traits + backstory)
 - ✅ Summon reveal is atmospheric and satisfying
 - ✅ Combat is readable, strategic, narratively immersive
 - ✅ Tower building feels tactile and meaningful
-- ✅ Evolution feels like a earned reward
+- ✅ Evolution feels like an earned reward
 - ✅ Terminal aesthetic is consistent across all scenes
-- ✅ Text is readable on mobile
+- ⬜ Text is readable on mobile (Step 15)
+- ⬜ Heroes gain XP and level up after raids (Step 12)
+- ⬜ Skills feel distinct per archetype (Step 11)
+
+### Automated Tests (Step 16)
+```bash
+# Gacha distribution — verify 10K rolls match expected rates
+npm test -- --grep "gacha distribution"
+
+# Combat engine — damage formula, status effects, XP rewards
+npm test -- --grep "combat"
+
+# Tower system — placement validation, DP budget
+npm test -- --grep "tower"
+```
 
 ---
 
-## Estimated Build Time
+## Estimated Remaining Time
 
 | Step | Description | Estimate |
 |------|-------------|----------|
-| 1 | Project bootstrap | ~30 min |
-| 2 | Design system + UI components | ~2 hrs |
-| 3 | Data + core systems | ~3 hrs |
-| 4 | Title scene | ~30 min |
-| 5 | Summon scene | ~2 hrs |
-| 6 | Roster scene | ~1.5 hrs |
-| 7 | Tower scene | ~2 hrs |
-| 8 | Raid/combat scene | ~3 hrs |
-| 9 | Evolution scene | ~1 hr |
-| 10 | Polish + assets | ~2 hrs |
-| **Total** | | **~17 hrs** |
+| 11 | Data expansion | ~2 hrs |
+| 12 | Combat depth (XP, status effects, loot, room progression) | ~2 hrs |
+| 13 | Tower depth (defender assignment, enemy tower gen) | ~1 hr |
+| 14 | Evolution depth (requirements, stat diff, history) | ~1 hr |
+| 15 | Visual polish (glow, animations, mobile nav) | ~1.5 hrs |
+| 16 | README + demo prep | ~30 min |
+| **Total remaining** | | **~8 hrs** |

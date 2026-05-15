@@ -22,7 +22,7 @@ export type CombatAction = {
 export type CombatResult = {
   log: string[];
   combatants: Combatant[];
-  winner: "party" | "defenders" | "fled";
+  winner: "party" | "defenders" | "fled" | null;
 };
 
 export type CombatRoom = {

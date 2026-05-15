@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useGameStore } from "@/stores/gameStore";
 import { Panel } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
-import { getRoomPalette, buildRoom, buildEmptyTower } from "@/systems/tower";
+import { getRoomPalette, buildRoom } from "@/systems/tower";
 import type { TowerGridCell, RoomType } from "@/types/tower";
 
-const EMPTY_TOWER = buildEmptyTower();
-
 export default function TowerPage() {
-  const [tower, setTower] = useState(EMPTY_TOWER);
-  const [selectedRoom, setSelectedRoom] = useState<RoomType>("guard");
+  const tower = useGameStore((state) => state.tower);
+  const updateTower = useGameStore((state) => state.updateTower);
+  const [selectedRoom, setSelectedRoom] = React.useState<RoomType>("guard");
 
   const usedDp = useMemo(
     () => tower.cells.reduce((sum, cell) => sum + (cell.room?.dpCost ?? 0), 0),
@@ -20,14 +20,23 @@ export default function TowerPage() {
   const palette = getRoomPalette();
 
   const handlePlace = (cell: TowerGridCell) => {
+    if (cell.room) {
+      updateTower({
+        ...tower,
+        cells: tower.cells.map((item) =>
+          item.x === cell.x && item.y === cell.y ? { ...item, room: undefined } : item
+        ),
+      });
+      return;
+    }
     const room = buildRoom(selectedRoom);
     if (usedDp + room.dpCost > tower.dpBudget) return;
-    setTower((current) => ({
-      ...current,
-      cells: current.cells.map((item) =>
+    updateTower({
+      ...tower,
+      cells: tower.cells.map((item) =>
         item.x === cell.x && item.y === cell.y ? { ...item, room } : item
       ),
-    }));
+    });
   };
 
   return (
@@ -64,11 +73,14 @@ export default function TowerPage() {
                       key={`${cell.x}-${cell.y}`}
                       type="button"
                       onClick={() => handlePlace(cell)}
-                      className="aspect-square rounded-xl border border-[var(--border-dim)] bg-[var(--bg-panel)] transition hover:border-[var(--text-primary)]"
+                      title={cell.room ? `${cell.room.label} — click to remove` : "Empty — click to place"}
+                      className={`aspect-square rounded-xl border transition text-[0.6rem] leading-tight p-1 ${
+                        cell.room
+                          ? "border-[var(--text-primary)] bg-[rgba(212,197,160,0.08)] text-[var(--text-primary)]"
+                          : "border-[var(--border-dim)] bg-[var(--bg-panel)] hover:border-[var(--text-primary)] text-[var(--text-dim)]"
+                      }`}
                     >
-                      <span className="block h-full w-full text-[0.65rem] text-[var(--text-secondary)]">
-                        {cell.room?.label ?? "Empty"}
-                      </span>
+                      {cell.room ? cell.room.label.split(" ")[0] : "·"}
                     </button>
                   ))}
                 </div>
@@ -101,7 +113,7 @@ export default function TowerPage() {
             </Button>
             <div className="rounded-[22px] border border-[var(--border-dim)] bg-[rgba(255,255,255,0.03)] p-5 text-sm text-[var(--text-secondary)]">
               <p className="uppercase tracking-[0.24em] text-[var(--text-system)]">Tip</p>
-              <p className="mt-3">Select a room type, then click an empty tile to place it. Use guard rooms to slow intruders and boss chambers to anchor your tower.</p>
+              <p className="mt-3">Select a room type, then click an empty tile to place it. Click a placed room to remove it. Use guard rooms to slow intruders and boss chambers to anchor your tower.</p>
             </div>
           </Panel>
         </div>

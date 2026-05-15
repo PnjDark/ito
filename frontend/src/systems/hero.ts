@@ -1,7 +1,8 @@
 import { randomFromArray } from "@/lib/random";
 import { ARCHETYPES, SPECIALIZATIONS } from "@/data/archetypes";
 import { SKILLS } from "@/data/skills";
-import type { ArchetypeDefinition, HeroSkill, HeroStats, Rarity } from "@/types/hero";
+import type { ArchetypeDefinition } from "@/data/archetypes";
+import type { HeroSkill, HeroStats, Rarity } from "@/types/hero";
 
 const rarityMultipliers: Record<Rarity, number> = {
   common: 0.92,
@@ -30,7 +31,10 @@ export function calculateStats(base: HeroStats, rarity: Rarity): HeroStats {
   };
 }
 
-export function chooseSkills(archetypeKey: string) {
-  const filtered = SKILLS.filter((skill) => skill.id.includes("blade") || skill.id.includes("ember") || skill.id.includes("runic") || skill.id.includes("ward"));
-  return [randomFromArray(filtered), randomFromArray(filtered)].filter(Boolean) as HeroSkill[];
+export function chooseSkills(archetypeKey: string): HeroSkill[] {
+  const attackSkills = SKILLS.filter((s) => s.type === "attack");
+  const supportSkills = SKILLS.filter((s) => s.type !== "attack");
+  const primary = randomFromArray(attackSkills);
+  const secondary = randomFromArray(supportSkills.filter((s) => s.id !== primary?.id) ?? supportSkills);
+  return [primary, secondary].filter(Boolean) as HeroSkill[];
 }

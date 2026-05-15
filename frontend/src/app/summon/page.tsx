@@ -2,22 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { TypeWriter } from "@/components/ui/TypeWriter";
+import { TraitBadge } from "@/components/hero/TraitBadge";
+import { StatBar } from "@/components/ui/StatBar";
 import { useGameStore } from "@/stores/gameStore";
 import { formatRarity, rarityColor } from "@/lib/formatters";
+import type { Hero } from "@/types/hero";
 
 export default function SummonPage() {
   const fateThreads = useGameStore((state) => state.resources.fateThreads);
   const pity = useGameStore((state) => state.pity);
-  const lastSummon = useGameStore((state) => state.lastSummon);
   const summon = useGameStore((state) => state.summonHeroes);
   const [busy, setBusy] = useState(false);
+  const [revealed, setRevealed] = useState<Hero[]>([]);
+  const [focused, setFocused] = useState<Hero | null>(null);
 
   const handleSummon = async (count: number) => {
     setBusy(true);
-    await summon(count);
+    const heroes = await summon(count);
+    setRevealed(heroes);
+    setFocused(heroes[heroes.length - 1] ?? null);
     setBusy(false);
   };
 
@@ -25,84 +30,111 @@ export default function SummonPage() {
     <main className="relative min-h-[calc(100vh-86px)] px-6 py-10 lg:px-12">
       <div className="scanlines absolute inset-0 pointer-events-none opacity-60" />
       <div className="mx-auto grid max-w-6xl gap-8">
-        <Panel className="space-y-6">
-          <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.32em] text-[var(--text-system)]">
-              &gt; thread resonance engaged...
-            </p>
+        <Panel className="space-y-5">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.32em] text-[var(--text-system)]">&gt; thread resonance engaged...</p>
             <h1 className="text-4xl font-semibold text-[var(--text-primary)]">Summoning Circle</h1>
-            <p className="max-w-3xl text-sm leading-7 text-[var(--text-secondary)]">
-              Cast fate threads into the void and draw forth heroes shaped by ancient sigils and volatile personalities.
-            </p>
           </div>
-
-          <div className="grid gap-4 rounded-[20px] border border-[var(--border-dim)] bg-[var(--bg-elevated)] p-6 sm:grid-cols-[1fr_auto]">
-            <div className="space-y-3 text-sm text-[var(--text-secondary)]">
+          <div className="grid gap-4 rounded-[20px] border border-[var(--border-dim)] bg-[var(--bg-elevated)] p-5 sm:grid-cols-[1fr_auto]">
+            <div className="space-y-2 text-sm text-[var(--text-secondary)]">
               <p>Fate Threads: <span className="text-[var(--text-primary)]">{fateThreads}</span></p>
               <p>Thread Resonance: <span className="text-[var(--text-primary)]">{pity}/90</span></p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <Button disabled={busy || fateThreads < 10} onClick={() => handleSummon(1)}>
-                Summon ×1
-              </Button>
-              <Button disabled={busy || fateThreads < 100} onClick={() => handleSummon(10)}>
-                Summon ×10
-              </Button>
+              <button
+                type="button"
+                disabled={busy || fateThreads < 10}
+                onClick={() => handleSummon(1)}
+                className="terminal-btn disabled:opacity-40"
+              >
+                {busy ? "Casting..." : "[ Summon ×1 ]"}
+              </button>
+              <button
+                type="button"
+                disabled={busy || fateThreads < 100}
+                onClick={() => handleSummon(10)}
+                className="terminal-btn disabled:opacity-40"
+              >
+                [ Summon ×10 ]
+              </button>
             </div>
           </div>
         </Panel>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <Panel className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Latest Summon</h2>
-              {!lastSummon ? (
-                <p className="text-sm leading-7 text-[var(--text-secondary)]">
-                  No hero has been summoned yet. Use the summoning circle to tear a new champion from the tower's thread.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.32em] text-[var(--text-system)]">{formatRarity(lastSummon.rarity)}</p>
-                      <h3 className="text-3xl font-semibold text-[var(--text-primary)]">{lastSummon.name}</h3>
-                      <p className="text-sm text-[var(--text-secondary)]">{lastSummon.title}</p>
-                    </div>
-                    <div className="h-24 w-24 rounded-[18px] border border-[var(--border-dim)] bg-white/5" style={{ backgroundColor: rarityColor(lastSummon.rarity) + "22" }} />
-                  </div>
-
-                  <div className="grid gap-3 text-sm text-[var(--text-secondary)] sm:grid-cols-2">
-                    <div className="rounded-lg bg-[rgba(255,255,255,0.03)] p-4">
-                      <p className="uppercase tracking-[0.24em] text-[var(--text-system)]">Archetype</p>
-                      <p className="mt-2 text-[var(--text-primary)] capitalize">{lastSummon.archetype}</p>
-                    </div>
-                    <div className="rounded-lg bg-[rgba(255,255,255,0.03)] p-4">
-                      <p className="uppercase tracking-[0.24em] text-[var(--text-system)]">Specialization</p>
-                      <p className="mt-2 text-[var(--text-primary)] capitalize">{lastSummon.specialization}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 rounded-[18px] border border-[var(--border-dim)] bg-[rgba(255,255,255,0.03)] p-4 text-sm text-[var(--text-secondary)]">
-                    <p className="uppercase tracking-[0.24em] text-[var(--text-system)]">Backstory</p>
-                    <TypeWriter text={lastSummon.backstory} speed={30} />
-                  </div>
-                </div>
-              )}
+        {revealed.length > 1 && (
+          <Panel className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-system)]">Multi-Summon Results</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {revealed.map((hero) => (
+                <button
+                  key={hero.id}
+                  type="button"
+                  onClick={() => setFocused(hero)}
+                  className={`rounded-xl border p-3 text-left transition ${focused?.id === hero.id ? "border-[var(--text-primary)] bg-[rgba(212,197,160,0.08)]" : "border-[var(--border-dim)] bg-[rgba(255,255,255,0.02)]"}`}
+                  style={{ borderColor: focused?.id === hero.id ? rarityColor(hero.rarity) : undefined }}
+                >
+                  <p className="text-xs uppercase tracking-[0.18em]" style={{ color: rarityColor(hero.rarity) }}>{formatRarity(hero.rarity)}</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)] truncate">{hero.name}</p>
+                  <p className="text-xs text-[var(--text-dim)] capitalize">{hero.archetype}</p>
+                </button>
+              ))}
             </div>
           </Panel>
+        )}
 
-          <Panel className="space-y-4">
-            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Summon Notes</h2>
-            <ul className="space-y-3 text-sm leading-6 text-[var(--text-secondary)]">
-              <li>• Cost: 10 Fate Threads per summon.</li>
-              <li>• Pity increases with non-mythic summons.</li>
-              <li>• Rare and above heroes bring stronger traits and backstories.</li>
-            </ul>
-            <Link href="/roster" className="terminal-btn w-full text-center">
-              View Your Roster
-            </Link>
+        {focused ? (
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+            <Panel className="space-y-5">
+              <div className="flex items-start gap-4">
+                <div
+                  className="h-24 w-24 shrink-0 rounded-xl border border-[var(--border-dim)]"
+                  style={{ background: rarityColor(focused.rarity) + "22", boxShadow: `0 0 24px ${rarityColor(focused.rarity)}33` }}
+                />
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.28em]" style={{ color: rarityColor(focused.rarity) }}>{formatRarity(focused.rarity)}</p>
+                  <h2 className="text-3xl font-semibold text-[var(--text-primary)]">{focused.name}</h2>
+                  <p className="text-sm text-[var(--text-secondary)]">{focused.title}</p>
+                  <p className="text-xs text-[var(--text-dim)] capitalize">{focused.archetype} · {focused.specialization}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {focused.traits.map((trait) => <TraitBadge key={trait.id} trait={trait} />)}
+              </div>
+
+              <div className="rounded-[18px] border border-[var(--border-dim)] bg-[rgba(255,255,255,0.02)] p-4">
+                <p className="mb-3 text-xs uppercase tracking-[0.24em] text-[var(--text-system)]">Backstory</p>
+                <TypeWriter text={focused.backstory} speed={25} />
+              </div>
+            </Panel>
+
+            <Panel className="space-y-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-system)]">Stats</p>
+              <StatBar label="HP" value={focused.stats.hp} max={focused.maxHp} accent="bg-[var(--accent-fire)]" />
+              <StatBar label="ATK" value={focused.stats.atk} max={40} accent="bg-[var(--accent-ice)]" />
+              <StatBar label="DEF" value={focused.stats.def} max={40} accent="bg-[var(--accent-nature)]" />
+              <StatBar label="MAG" value={focused.stats.mag} max={40} accent="bg-[var(--accent-shadow)]" />
+              <StatBar label="SPD" value={focused.stats.spd} max={40} accent="bg-[var(--accent-holy)]" />
+              <div className="pt-2 space-y-2">
+                <Link href="/roster" className="terminal-btn block w-full text-center">[ View Roster ]</Link>
+                <button
+                  type="button"
+                  disabled={busy || fateThreads < 10}
+                  onClick={() => handleSummon(1)}
+                  className="terminal-btn w-full disabled:opacity-40"
+                >
+                  [ Summon Again ]
+                </button>
+              </div>
+            </Panel>
+          </div>
+        ) : (
+          <Panel>
+            <p className="text-sm leading-7 text-[var(--text-secondary)]">
+              No hero summoned yet. Cast your fate threads into the void to draw forth a champion.
+            </p>
           </Panel>
-        </div>
+        )}
       </div>
     </main>
   );

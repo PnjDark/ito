@@ -6,6 +6,7 @@ import { buildEmptyTower, generateEnemyTowers } from "@/systems/tower";
 import { summonHeroes as performSummon } from "@/systems/gacha";
 import { applyEvolution } from "@/systems/evolution";
 import type { GameState } from "@/types/game";
+import type { Tower } from "@/types/tower";
 
 const initialResources = {
   fateThreads: 120,
@@ -52,6 +53,7 @@ export const useGameStore = create<GameState>()(
         set((state) => ({ combatLog: [...state.combatLog, entry] })),
       resetCombatLog: () => set({ combatLog: [] }),
       progressRoom: () => set((state) => ({ activeRoomIndex: state.activeRoomIndex + 1 })),
+      updateTower: (tower: Tower) => set({ tower }),
       evolveHero: (heroId: string, pathId: string) => {
         set((state) => ({
           heroes: state.heroes.map((hero) =>
