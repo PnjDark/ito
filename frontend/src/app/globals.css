@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+:root {
+  --bg-void: #08080c;
+  --bg-terminal: #0e0e14;
+  --bg-panel: #14141e;
+  --bg-elevated: #1a1a28;
+  --border-dim: #2a2a3a;
+  --border-glow: #3a3a5a;
+
+  --text-primary: #d4c5a0;
+  --text-secondary: #8a8070;
+  --text-system: #5a7a5a;
+  --text-dim: #4a4a5a;
+
+  --rarity-common: #7a7a8a;
+  --rarity-rare: #4a8ab5;
+  --rarity-elite: #9b5de5;
+  --rarity-mythic: #d4a855;
+  --rarity-ascendant: #ff6b6b;
+
+  --accent-fire: #e85d3a;
+  --accent-ice: #5bc0de;
+  --accent-nature: #5a8a5a;
+  --accent-shadow: #6a4c93;
+  --accent-holy: #f0d060;
+}
+
+@theme inline {
+  --color-background: var(--bg-terminal);
+  --color-foreground: var(--text-primary);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+  --font-ui: var(--font-ui);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-height: 100%;
+    background: radial-gradient(circle at top, rgba(212, 197, 160, 0.05), transparent 32%), #08080c;
+    color: var(--text-primary);
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--font-body), serif;
+    background: var(--bg-terminal);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  ::selection {
+    background: rgba(212, 197, 160, 0.2);
+  }
+}
+
+@layer utilities {
+  .panel {
+    @apply rounded-[18px] border border-[var(--border-dim)] bg-[var(--bg-panel)]/90 shadow-[0_0_45px_rgba(0,0,0,0.15)] backdrop-blur-xl;
+  }
+
+  .panel-glow {
+    @apply border-[var(--border-glow)]/80 shadow-[0_0_40px_rgba(156,93,229,0.14)];
+  }
+
+  .terminal-btn {
+    @apply inline-flex items-center justify-center rounded-none border border-[var(--border-dim)] bg-[rgba(255,255,255,0.02)] px-6 py-3 text-sm uppercase tracking-[0.16em] text-[var(--text-primary)] transition-all duration-200 ease-out hover:border-[var(--text-primary)] hover:bg-[rgba(212,197,160,0.08)] hover:text-white;
+  }
+
+  .rune-border {
+    border-image: linear-gradient(90deg, rgba(212,197,160,0.25), rgba(212,197,160,0.05)) 1;
+    box-shadow: inset 0 0 0 1px rgba(212, 197, 160, 0.08);
+  }
+
+  .scanlines::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 3px;
+    opacity: 0.38;
+    mix-blend-mode: screen;
+  }
+
+  .typewriter {
+    animation: typewriter 1.6s steps(40, end), fadeIn 0.8s ease-in;
+  }
+
+  @keyframes typewriter {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
