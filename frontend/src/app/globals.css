@@ -101,6 +101,31 @@
     animation: typewriter 1.6s steps(40, end), fadeIn 0.8s ease-in;
   }
 
+  .rarity-glow-mythic {
+    box-shadow: 0 0 20px rgba(212, 168, 85, 0.2), inset 0 0 10px rgba(212, 168, 85, 0.1);
+    border-color: rgba(212, 168, 85, 0.4);
+  }
+
+  .rarity-glow-ascendant {
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.25), inset 0 0 12px rgba(255, 107, 107, 0.15);
+    border-color: rgba(255, 107, 107, 0.5);
+    animation: pulse-red 3s infinite ease-in-out;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.25); }
+    50% { box-shadow: 0 0 45px rgba(255, 107, 107, 0.45); }
+  }
+
+  .page-transition {
+    animation: pageFadeIn 0.5s ease-out;
+  }
+
+  @keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   @keyframes typewriter {
     from {
       width: 0;

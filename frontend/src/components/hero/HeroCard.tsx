@@ -4,8 +4,9 @@ import { formatRarity, rarityColor } from "@/lib/formatters";
 export function HeroCard({ hero }: { hero: Hero }) {
   return (
     <article
-      className="panel group overflow-hidden border border-[var(--border-dim)] bg-[var(--bg-elevated)]/95 p-4 transition hover:border-[var(--text-primary)]"
-      style={{ boxShadow: `0 0 20px rgba(0,0,0,0.18)` }}
+      className={`panel group overflow-hidden border p-4 transition hover:border-[var(--text-primary)] ${
+        hero.rarity === "mythic" ? "rarity-glow-mythic" : hero.rarity === "ascendant" ? "rarity-glow-ascendant" : "border-[var(--border-dim)] bg-[var(--bg-elevated)]/95"
+      }`}
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>

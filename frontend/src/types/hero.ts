@@ -18,7 +18,10 @@ export type SpecializationKey =
   | "ember"
   | "seer"
   | "storm"
-  | "aegis";
+  | "aegis"
+  | "vanguard"
+  | "curator"
+  | "wraith";
 
 export type MoodState = "steadfast" | "inspired" | "tense" | "broken";
 
@@ -44,6 +47,7 @@ export type HeroSkill = {
   power: number;
   cost: number;
   type: "attack" | "support" | "utility";
+  archetype?: ArchetypeKey;
 };
 
 export type Hero = {
@@ -59,6 +63,7 @@ export type Hero = {
   maxHp: number;
   skills: HeroSkill[];
   traits: HeroTrait[];
+  evolutionHistory: string[];
   mood: {
     morale: number;
     loyalty: number;

@@ -20,8 +20,23 @@ export function CombatantRow({ combatant }: { combatant: Combatant }) {
           style={{ width: `${hpRatio * 100}%`, background: hpColor }}
         />
       </div>
-      {combatant.status && (
-        <p className="mt-1 text-xs text-[var(--accent-fire)]">{combatant.status}</p>
+      {combatant.statusEffects?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {combatant.statusEffects.map((eff, i) => (
+            <span
+              key={`${eff.id}-${i}`}
+              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                eff.id === "burn"
+                  ? "bg-[var(--accent-fire)]/20 text-[var(--accent-fire)]"
+                  : eff.id === "shield"
+                  ? "bg-[var(--accent-ice)]/20 text-[var(--accent-ice)]"
+                  : "bg-[var(--accent-holy)]/20 text-[var(--accent-holy)]"
+              }`}
+            >
+              {eff.id} {eff.duration}
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

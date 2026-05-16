@@ -7,8 +7,10 @@ import { CombatLog } from "@/components/combat/CombatLog";
 import { CombatantRow } from "@/components/combat/CombatantRow";
 import { TurnOrder } from "@/components/combat/TurnOrder";
 import { ActionPanel } from "@/components/combat/ActionPanel";
-import { heroToCombatant, createDefender, runCombatRound, resolveAttack } from "@/systems/combat";
-import type { Combatant } from "@/types/combat";
+import { heroToCombatant, createDefender, resolveAttack, processStatusEffects, applySkillEffect, calculateRewards } from "@/systems/combat";
+import { applyXP } from "@/systems/hero";
+import { LootReveal } from "@/components/combat/LootReveal";
+import type { Combatant, CombatRewards } from "@/types/combat";
 import type { HeroSkill } from "@/types/hero";
 
 type Phase = "setup" | "combat" | "done";
@@ -23,6 +25,8 @@ export default function RaidPage() {
   const [combatants, setCombatants] = useState<Combatant[]>([]);
   const [log, setLog] = useState<string[]>([]);
   const [result, setResult] = useState<"party" | "defenders" | "fled" | null>(null);
+  const [roomLevel, setRoomLevel] = useState(1);
+  const [rewards, setRewards] = useState<CombatRewards | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const party = useMemo(
@@ -52,12 +56,41 @@ export default function RaidPage() {
 
   const startRaid = () => {
     if (!selectedTower || party.length === 0) return;
-    const defenders = (selectedTower.defenders as string[]).map((name) => createDefender(name, 2));
+    setRoomLevel(1);
+    const defenders = (selectedTower.defenders as string[]).map((name) => createDefender(name, 1));
     const initial = [...party.map(heroToCombatant), ...defenders];
     setCombatants(initial);
     setLog([`> Raid on ${selectedTower.name} begins...`, `> ${party.length} heroes vs ${defenders.length} defenders.`]);
     setPhase("combat");
     setResult(null);
+    setRewards(null);
+  };
+
+  const nextRoom = () => {
+    const nextLevel = roomLevel + 1;
+    setRoomLevel(nextLevel);
+    const defenders = (selectedTower.defenders as string[]).map((name) => createDefender(name, nextLevel));
+    // Carry over party health and status from current combatants
+    const survivors = combatants.filter(c => !c.isEnemy);
+    setCombatants([...survivors, ...defenders]);
+    setLog(prev => [...prev, `--- ROOM ${nextLevel} ---`, `> New defenders emerge from the shadows...`]);
+    setPhase("combat");
+    setResult(null);
+    setRewards(null);
+  };
+
+  const addRewards = useGameStore((state) => (state as any).addRewards);
+
+  const finalizeVictory = () => {
+    const finalRewards = calculateRewards(roomLevel);
+    setRewards(finalRewards);
+    
+    // Apply rewards to store
+    if (addRewards) {
+      addRewards(party.map(h => h.id), finalRewards);
+    }
+    
+    setPhase("done");
   };
 
   const checkWinner = (current: Combatant[]) => {
@@ -70,13 +103,29 @@ export default function RaidPage() {
 
   const resolveEnemyTurns = (state: Combatant[]): { next: Combatant[]; entries: string[] } => {
     const entries: string[] = [];
-    const next = state.map((c) => ({ ...c }));
+    let next = state.map((c) => ({ ...c }));
     const enemies = next.filter((c) => c.isEnemy && c.hp > 0);
+
     for (const enemy of enemies) {
+      // Process Status Effects
+      const { log: effLog, updated: effEnemy } = processStatusEffects(enemy);
+      entries.push(...effLog);
+      next = next.map(c => c.id === enemy.id ? effEnemy : c);
+
+      if (effEnemy.hp <= 0) {
+        entries.push(`> ${effEnemy.name} succumbed to status effects.`);
+        continue;
+      }
+
+      if (effEnemy.statusEffects.some(e => e.id === "stun")) {
+        entries.push(`> ${effEnemy.name} is stunned and skips their turn.`);
+        continue;
+      }
+
       const targets = next.filter((c) => !c.isEnemy && c.hp > 0);
       if (targets.length === 0) break;
       const target = targets[Math.floor(Math.random() * targets.length)];
-      const dmg = resolveAttack(enemy, target);
+      const dmg = resolveAttack(effEnemy, target);
       const t = next.find((c) => c.id === target.id)!;
       t.hp = Math.max(0, t.hp - dmg);
       entries.push(`> ${enemy.name} strikes ${target.name} for ${dmg} damage.${t.hp === 0 ? " [FALLEN]" : ""}`);
@@ -94,33 +143,63 @@ export default function RaidPage() {
     if (enemies.length === 0 || playerHeroes.length === 0) return;
 
     if (action === "defend") {
-      entries.push(`> Your party braces for impact. DEF increased this round.`);
+      entries.push(`> Your party braces for impact. DEF and Shield increased.`);
       playerHeroes.forEach((h) => {
         const c = next.find((x) => x.id === h.id)!;
-        c.def = Math.round(c.def * 1.3);
+        c.statusEffects.push({ id: "shield", duration: 1, value: 5 });
       });
     } else {
       for (const hero of playerHeroes) {
+        // Process Status Effects for Hero
+        const { log: effLog, updated: effHero } = processStatusEffects(hero);
+        entries.push(...effLog);
+        const hIndex = next.findIndex(c => c.id === hero.id);
+        next[hIndex] = effHero;
+
+        if (effHero.hp <= 0) {
+          entries.push(`> ${effHero.name} succumbed to status effects.`);
+          continue;
+        }
+
+        if (effHero.statusEffects.some(e => e.id === "stun")) {
+          entries.push(`> ${effHero.name} is stunned and skips their turn.`);
+          continue;
+        }
+
         const target = enemies.filter((e) => e.hp > 0)[0];
         if (!target) break;
         const t = next.find((c) => c.id === target.id)!;
-        const power = skill ? skill.power : 0;
-        const attacker = { ...hero, atk: hero.atk + power };
-        const dmg = resolveAttack(attacker, t);
-        t.hp = Math.max(0, t.hp - dmg);
-        const label = skill ? `uses ${skill.name} on` : "attacks";
-        const crit = dmg > attacker.atk ? " (CRITICAL)" : "";
-        entries.push(`> ${hero.name} ${label} ${target.name} — ${dmg} damage!${crit}${t.hp === 0 ? " [SLAIN]" : ""}`);
+        
+        if (action === "skill" && skill) {
+          const dmg = resolveAttack(effHero, t) + Math.round(skill.power * 0.5);
+          t.hp = Math.max(0, t.hp - dmg);
+          const { log: skillLog, updated: skilledTarget } = applySkillEffect(skill, t);
+          const tIndex = next.findIndex(c => c.id === t.id);
+          next[tIndex] = skilledTarget;
+          entries.push(`> ${effHero.name} uses ${skill.name} on ${t.name} — ${dmg} damage!`);
+          entries.push(...skillLog);
+          if (skilledTarget.hp === 0) entries.push(`> ${t.name} [SLAIN]`);
+        } else {
+          const dmg = resolveAttack(effHero, t);
+          t.hp = Math.max(0, t.hp - dmg);
+          entries.push(`> ${effHero.name} attacks ${t.name} — ${dmg} damage!${t.hp === 0 ? " [SLAIN]" : ""}`);
+        }
       }
     }
 
     const afterPlayer = checkWinner(next);
-    if (afterPlayer) {
-      appendLog(entries);
+    if (afterPlayer === "party") {
+      appendLog([...entries, "> Room cleared!"]);
       setCombatants(next);
-      setResult(afterPlayer);
+      setResult("party");
+      finalizeVictory();
+      return;
+    }
+    if (afterPlayer === "defenders") {
+      appendLog([...entries, "> Defeat. Your party is broken."]);
+      setCombatants(next);
+      setResult("defenders");
       setPhase("done");
-      appendLog([afterPlayer === "party" ? "> Victory! The tower falls." : "> Defeat. Your party is broken."]);
       return;
     }
 
@@ -264,14 +343,20 @@ export default function RaidPage() {
                   />
                 </Panel>
               ) : (
-                <Panel className="space-y-3 text-center">
-                  <p className={`text-lg font-semibold ${result === "party" ? "text-[var(--accent-holy)]" : "text-[var(--rarity-ascendant)]"}`}>
-                    {result === "party" ? "Victory" : result === "fled" ? "Retreated" : "Defeat"}
-                  </p>
-                  <button type="button" onClick={reset} className="terminal-btn w-full">
-                    [ Return ]
-                  </button>
-                </Panel>
+                <div className="space-y-4">
+                  {result === "party" && rewards ? (
+                    <LootReveal rewards={rewards} onContinue={nextRoom} />
+                  ) : (
+                    <Panel className="space-y-3 text-center">
+                      <p className={`text-lg font-semibold ${result === "fled" ? "text-[var(--text-secondary)]" : "text-[var(--rarity-ascendant)]"}`}>
+                        {result === "fled" ? "Retreated" : "Defeat"}
+                      </p>
+                      <button type="button" onClick={reset} className="terminal-btn w-full">
+                        [ Return to Hub ]
+                      </button>
+                    </Panel>
+                  )}
+                </div>
               )}
             </div>
           </div>

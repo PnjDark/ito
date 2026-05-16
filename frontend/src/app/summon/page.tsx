@@ -29,8 +29,18 @@ export default function SummonPage() {
   return (
     <main className="relative min-h-[calc(100vh-86px)] px-6 py-10 lg:px-12">
       <div className="scanlines absolute inset-0 pointer-events-none opacity-60" />
-      <div className="mx-auto grid max-w-6xl gap-8">
-        <Panel className="space-y-5">
+      <div className="mx-auto grid max-w-6xl gap-8 relative">
+        {busy && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <div className="h-64 w-64 rounded-full border-4 border-dashed border-[var(--text-primary)] opacity-20 animate-spin" style={{ animationDuration: "12s" }} />
+            <div className="absolute h-48 w-48 rounded-full border-2 border-[var(--accent-holy)] opacity-40 animate-ping" />
+            <div className="absolute text-xl font-bold uppercase tracking-[0.5em] text-[var(--text-primary)] animate-pulse">
+              Drawing Threads...
+            </div>
+          </div>
+        )}
+
+        <Panel className={`space-y-5 transition-opacity duration-700 ${busy ? "opacity-20" : "opacity-100"}`}>
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-[0.32em] text-[var(--text-system)]">&gt; thread resonance engaged...</p>
             <h1 className="text-4xl font-semibold text-[var(--text-primary)]">Summoning Circle</h1>

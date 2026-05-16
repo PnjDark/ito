@@ -51,7 +51,9 @@ export default function RootLayout({
       <body className="min-h-full bg-[var(--bg-terminal)] text-[var(--text-primary)]">
         <div className="min-h-full">
           <NavBar />
-          {children}
+          <div className="page-transition pb-20 sm:pb-0">
+            {children}
+          </div>
         </div>
       </body>
     </html>

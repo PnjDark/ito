@@ -42,7 +42,8 @@ export function createHero(rarity: Rarity): Hero {
     skills: chooseSkills(archetype.key),
     traits,
     mood,
-    backstory: createBackstory(name),
+    evolutionHistory: [],
+    backstory: createBackstory({ name, title, archetype: archetype.name }),
     portrait: createPortraitUrl(rarity),
   };
 }

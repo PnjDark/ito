@@ -1,4 +1,5 @@
 import { BACKSTORY_TEMPLATES } from "@/data/backstories";
+import { FACTIONS } from "@/data/factions";
 import { EPITHETS, NAME_MIDDLES, NAME_PREFIXES, NAME_SUFFIXES } from "@/data/names";
 import { randomFromArray, randomInt } from "@/lib/random";
 
@@ -13,9 +14,14 @@ export function createHeroTitle() {
   return randomFromArray(EPITHETS);
 }
 
-export function createBackstory(name: string) {
+export function createBackstory(hero: { name: string; title: string; archetype: string }) {
   const template = randomFromArray(BACKSTORY_TEMPLATES);
-  return template.replace("{name}", name);
+  const faction = randomFromArray(FACTIONS);
+  return template
+    .replace(/{name}/g, hero.name)
+    .replace(/{epithet}/g, hero.title)
+    .replace(/{archetype}/g, hero.archetype)
+    .replace(/{faction}/g, faction);
 }
 
 export function createPortraitUrl(rarity: string) {

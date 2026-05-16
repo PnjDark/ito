@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 import { buildEmptyTower, generateEnemyTowers } from "@/systems/tower";
 import { summonHeroes as performSummon } from "@/systems/gacha";
 import { applyEvolution } from "@/systems/evolution";
+import { applyXP } from "@/systems/hero";
 import type { GameState } from "@/types/game";
 import type { Tower } from "@/types/tower";
 
@@ -60,6 +61,29 @@ export const useGameStore = create<GameState>()(
             hero.id === heroId ? applyEvolution(hero, pathId) : hero
           ),
         }));
+      },
+      addRewards: (heroIds: string[], rewards: { xp: number; gold: number; moodChange: { morale: number; fear: number } }) => {
+        set((state) => {
+          const nextHeroes = state.heroes.map((h) => {
+            if (heroIds.includes(h.id)) {
+              const updated = {
+                ...h,
+                mood: {
+                  ...h.mood,
+                  morale: Math.min(100, h.mood.morale + rewards.moodChange.morale),
+                  fear: Math.max(0, h.mood.fear + rewards.moodChange.fear),
+                },
+              };
+              applyXP(updated, rewards.xp);
+              return updated;
+            }
+            return h;
+          });
+          return {
+            heroes: nextHeroes,
+            resources: { ...state.resources, gold: state.resources.gold + rewards.gold },
+          };
+        });
       },
     }),
     {

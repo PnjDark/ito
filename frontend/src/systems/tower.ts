@@ -1,13 +1,17 @@
-import { randomInt } from "@/lib/random";
+import { randomInt, randomFromArray } from "@/lib/random";
+import { TOWER_THEMES } from "@/data/tower-themes";
 import type { Tower, TowerGridCell, TowerRoom, RoomPaletteItem, RoomType } from "@/types/tower";
 
 const roomPalette: RoomPaletteItem[] = [
-  { type: "guard", label: "Guard Post", cost: 40, description: "Weak defenders and slow traps." },
-  { type: "vault", label: "Vault", cost: 65, description: "Contains treasure and hidden threats." },
-  { type: "ritual", label: "Ritual Chamber", cost: 80, description: "Strengthens defenders within range." },
-  { type: "trap", label: "Trap Module", cost: 25, description: "Deals damage to intruders before combat." },
-  { type: "boss", label: "Boss Lair", cost: 140, description: "Home to the strongest guardian." },
+  { type: "guard", label: "Guard Post", cost: 40, description: "Solid defenders and basic traps." },
+  { type: "vault", label: "Vault", cost: 65, description: "Treasury of the deep, lures the greedy." },
+  { type: "ritual", label: "Ritual Chamber", cost: 80, description: "Ancient sigils that empower defenders." },
+  { type: "trap", label: "Trap Module", cost: 25, description: "Lethal mechanisms to weaken intruders." },
+  { type: "boss", label: "Boss Lair", cost: 140, description: "Final sanctum of the tower's strongest." },
 ];
+
+const enemyTowerNames = ["Obsidian Bastion", "Dorune Archive", "Shattered Spire", "Silent Crypt", "Aether Citadel"];
+const enemyDefenderNames = ["Rift Guard", "Rune Watcher", "Void Harrier", "Ash Overlord", "Sigil Breaker", "Grave Stalker"];
 
 export function buildEmptyTower(width = 8, height = 5): Tower {
   const cells: TowerGridCell[] = [];
@@ -17,10 +21,12 @@ export function buildEmptyTower(width = 8, height = 5): Tower {
     }
   }
 
+  const theme = TOWER_THEMES[0];
+
   return {
     id: `tower_player_1`,
     name: "Abyssal Spire",
-    theme: "Runic Bastion",
+    theme: theme.name,
     width,
     height,
     dpBudget: 1600,
@@ -31,45 +37,34 @@ export function buildEmptyTower(width = 8, height = 5): Tower {
   };
 }
 
-export function generateEnemyTowers() {
-  return [
-    {
-      id: "tower_shadow_1",
-      name: "Obsidian Bastion",
-      theme: "Shadow",
+export function generateEnemyTowers(count = 3): Tower[] {
+  return Array.from({ length: count }).map((_, i) => {
+    const theme = randomFromArray(TOWER_THEMES);
+    return {
+      id: `tower_enemy_${i}_${Date.now()}`,
+      name: randomFromArray(enemyTowerNames),
+      theme: theme.name,
       width: 8,
       height: 5,
-      dpBudget: 1200,
+      dpBudget: 1000 + i * 400,
       usedDp: 0,
       cells: [],
-      defenders: ["Rift Guard", "Rune Watcher", "Void Harrier"],
+      defenders: Array.from({ length: 3 + i }).map(() => randomFromArray(enemyDefenderNames)),
       builtAt: new Date().toISOString(),
-    },
-    {
-      id: "tower_abyss_2",
-      name: "Dorune Archive",
-      theme: "Arcane",
-      width: 8,
-      height: 5,
-      dpBudget: 1400,
-      usedDp: 0,
-      cells: [],
-      defenders: ["Bonewarden", "Sigil Breaker", "Ash Overlord"],
-      builtAt: new Date().toISOString(),
-    },
-  ] as Tower[];
+    };
+  });
 }
 
 export function getRoomPalette() {
   return roomPalette;
 }
 
-export function buildRoom(type: RoomType) {
+export function buildRoom(type: RoomType): TowerRoom {
   return {
     id: `room_${type}_${randomInt(1000, 9999)}`,
     type,
     level: 1,
     dpCost: roomPalette.find((room) => room.type === type)?.cost ?? 40,
     label: roomPalette.find((room) => room.type === type)?.label ?? "Chamber",
-  } satisfies TowerRoom;
+  };
 }

@@ -5,12 +5,15 @@ import { useGameStore } from "@/stores/gameStore";
 import { Panel } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { getRoomPalette, buildRoom } from "@/systems/tower";
-import type { TowerGridCell, RoomType } from "@/types/tower";
+import { Modal } from "@/components/ui/Modal";
+import { TOWER_THEMES } from "@/data/tower-themes";
+import type { TowerGridCell, RoomType, TowerRoom } from "@/types/tower";
 
 export default function TowerPage() {
-  const tower = useGameStore((state) => state.tower);
-  const updateTower = useGameStore((state) => state.updateTower);
+  const heroes = useGameStore((state) => state.heroes);
   const [selectedRoom, setSelectedRoom] = React.useState<RoomType>("guard");
+  const [assigningCell, setAssigningCell] = React.useState<TowerGridCell | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const usedDp = useMemo(
     () => tower.cells.reduce((sum, cell) => sum + (cell.room?.dpCost ?? 0), 0),
@@ -21,6 +24,11 @@ export default function TowerPage() {
 
   const handlePlace = (cell: TowerGridCell) => {
     if (cell.room) {
+      if (cell.room.type === "guard" || cell.room.type === "boss") {
+        setAssigningCell(cell);
+        return;
+      }
+      // Simple room, just remove
       updateTower({
         ...tower,
         cells: tower.cells.map((item) =>
@@ -38,6 +46,36 @@ export default function TowerPage() {
       ),
     });
   };
+
+  const handleAssignHero = (heroId: string | undefined) => {
+    if (!assigningCell) return;
+    updateTower({
+      ...tower,
+      cells: tower.cells.map((item) =>
+        item.x === assigningCell.x && item.y === assigningCell.y 
+          ? { ...item, room: { ...item.room!, assignedHeroId: heroId } as TowerRoom } 
+          : item
+      ),
+    });
+    setAssigningCell(null);
+  };
+
+  const removeRoom = (cell: TowerGridCell) => {
+    updateTower({
+      ...tower,
+      cells: tower.cells.map((item) =>
+        item.x === cell.x && item.y === cell.y ? { ...item, room: undefined } : item
+      ),
+    });
+    setAssigningCell(null);
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => setIsSaving(false), 1500);
+  };
+
+  const towerTheme = TOWER_THEMES.find(t => t.name === tower.theme) ?? TOWER_THEMES[0];
 
   return (
     <main className="relative min-h-[calc(100vh-86px)] px-6 py-10 lg:px-12">
@@ -60,8 +98,9 @@ export default function TowerPage() {
                 <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-system)]">DP budget</p>
                 <p className="mt-2 text-lg text-[var(--text-primary)]">{usedDp} / {tower.dpBudget}</p>
               </div>
-              <div className="rounded-full border border-[var(--border-dim)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-sm text-[var(--text-secondary)]">
-                {tower.theme}
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-system)]">{tower.theme}</p>
+                <p className="mt-1 text-sm italic text-[var(--text-secondary)]">{towerTheme.flavor}</p>
               </div>
             </div>
 
@@ -74,13 +113,24 @@ export default function TowerPage() {
                       type="button"
                       onClick={() => handlePlace(cell)}
                       title={cell.room ? `${cell.room.label} — click to remove` : "Empty — click to place"}
-                      className={`aspect-square rounded-xl border transition text-[0.6rem] leading-tight p-1 ${
+                      className={`aspect-square rounded-xl border transition text-[0.6rem] leading-tight p-1 flex flex-col items-center justify-center gap-0.5 ${
                         cell.room
                           ? "border-[var(--text-primary)] bg-[rgba(212,197,160,0.08)] text-[var(--text-primary)]"
                           : "border-[var(--border-dim)] bg-[var(--bg-panel)] hover:border-[var(--text-primary)] text-[var(--text-dim)]"
                       }`}
                     >
-                      {cell.room ? cell.room.label.split(" ")[0] : "·"}
+                      {cell.room ? (
+                        <>
+                          <span className="font-bold">{cell.room.label.split(" ")[0]}</span>
+                          {cell.room.assignedHeroId && (
+                            <span className="text-[0.5rem] text-[var(--text-system)] truncate w-full">
+                              {heroes.find(h => h.id === cell.room!.assignedHeroId)?.name.split(" ")[0]}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        "·"
+                      )}
                     </button>
                   ))}
                 </div>
@@ -108,8 +158,11 @@ export default function TowerPage() {
                 ))}
               </div>
             </div>
-            <Button disabled={usedDp >= tower.dpBudget} className="w-full">
+            <Button disabled={usedDp >= tower.dpBudget} onClick={() => {}} className="w-full">
               Place selected room
+            </Button>
+            <Button onClick={handleSave} className="w-full border-[var(--text-system)] text-[var(--text-system)] hover:bg-[var(--text-system)]/10">
+              {isSaving ? "[ SYSTEM SAVED ]" : "[ Save Tower Layout ]"}
             </Button>
             <div className="rounded-[22px] border border-[var(--border-dim)] bg-[rgba(255,255,255,0.03)] p-5 text-sm text-[var(--text-secondary)]">
               <p className="uppercase tracking-[0.24em] text-[var(--text-system)]">Tip</p>
@@ -118,6 +171,49 @@ export default function TowerPage() {
           </Panel>
         </div>
       </div>
+       <Modal
+        isOpen={!!assigningCell}
+        onClose={() => setAssigningCell(null)}
+        title={assigningCell?.room?.label ?? "Room Assignment"}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Assign a hero from your roster to defend this {assigningCell?.room?.type}. Defenders will be the first line of defense during raids.
+          </p>
+          <div className="grid gap-2 max-h-60 overflow-y-auto">
+            <button
+              onClick={() => handleAssignHero(undefined)}
+              className="w-full rounded-xl border border-[var(--border-dim)] p-3 text-left hover:border-[var(--text-primary)] transition"
+            >
+              <p className="font-semibold text-[var(--text-dim)]">[ None / Remove Defender ]</p>
+            </button>
+            {heroes.map(hero => (
+              <button
+                key={hero.id}
+                onClick={() => handleAssignHero(hero.id)}
+                className={`w-full rounded-xl border p-3 text-left transition ${
+                  assigningCell?.room?.assignedHeroId === hero.id 
+                    ? "border-[var(--text-primary)] bg-[rgba(212,197,160,0.1)]" 
+                    : "border-[var(--border-dim)] hover:border-[var(--text-primary)]"
+                }`}
+              >
+                <p className="font-semibold text-[var(--text-primary)]">{hero.name}</p>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-tighter">
+                  {hero.rarity} {hero.archetype} · Level {hero.level}
+                </p>
+              </button>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-[var(--border-dim)]">
+            <button
+              onClick={() => assigningCell && removeRoom(assigningCell)}
+              className="w-full rounded-xl border border-[var(--rarity-ascendant)] py-3 text-[var(--rarity-ascendant)] hover:bg-[var(--rarity-ascendant)]/10 transition"
+            >
+              [ Dismantle Room ]
+            </button>
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }

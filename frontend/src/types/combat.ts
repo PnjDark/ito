@@ -1,5 +1,13 @@
 import type { Hero } from "@/types/hero";
 
+export type StatusEffectId = "burn" | "shield" | "stun";
+
+export type StatusEffect = {
+  id: StatusEffectId;
+  duration: number;
+  value?: number;
+};
+
 export type Combatant = {
   id: string;
   name: string;
@@ -9,7 +17,7 @@ export type Combatant = {
   def: number;
   spd: number;
   isEnemy: boolean;
-  status?: string;
+  statusEffects: StatusEffect[];
 };
 
 export type CombatAction = {
@@ -19,10 +27,17 @@ export type CombatAction = {
   skillId?: string;
 };
 
+export type CombatRewards = {
+  xp: number;
+  gold: number;
+  moodChange: { morale: number; fear: number };
+};
+
 export type CombatResult = {
   log: string[];
   combatants: Combatant[];
   winner: "party" | "defenders" | "fled" | null;
+  rewards?: CombatRewards;
 };
 
 export type CombatRoom = {
