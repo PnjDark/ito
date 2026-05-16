@@ -1,0 +1,13 @@
+{
+  "name": "ito",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "frontend:dev": "npm run dev --workspace=frontend",
+    "backend:dev": "npm run start:dev --workspace=backend",
+    "dev": "npm run frontend:dev & npm run backend:dev"
+  }
+}
